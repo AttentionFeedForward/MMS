@@ -1,0 +1,57 @@
+services:
+  # 1. Next.js 主服务
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: material-search-web
+    restart: always
+    ports:
+      - "3000:3000"
+      - "5555:5555" # Prisma Studio Port
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+      # Docker 内部网络通信，直接使用 service name
+      - PYTHON_SERVICE_URL=http://python_service:8000
+      # 邮件配置
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    volumes:
+      # 持久化上传的文件
+      - ./public/uploads:/app/public/uploads
+      # 持久化 SQLite 数据库 (挂载整个目录，而不是单个文件)
+      - ./prisma:/app/prisma
+    depends_on:
+      - python_service
+
+  # 2. Python AI 服务
+  python_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: material-search-python
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # 请在服务器的 .env 文件中设置这些值，或直接在此处填入
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+    volumes:
+      # 持久化 ChromaDB 向量数据
+      - ./python_service/chroma_db:/app/chroma_db
+      # 挂载本地模型，避免每次 build 都要拷贝大文件
+      # 请确保服务器上的 ./python_service/bge-large-zh-v1.5 目录存在
+      - ./python_service/bge-large-zh-v1.5:/app/bge-large-zh-v1.5
+
+  # 3. Nginx 静态文件服务 (绕过 Next.js)
+  nginx:
+    image: nginx:alpine
+    container_name: material-search-nginx
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public/uploads:/usr/share/nginx/html/uploads

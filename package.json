@@ -1,0 +1,63 @@
+{
+  "name": "material-search-system",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "import:material-codes": "tsx scripts/importMaterialCodes.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@ant-design/cssinjs": "^2.0.1",
+    "@ant-design/nextjs-registry": "^1.0.0",
+    "@prisma/client": "^5.10.0",
+    "@types/lodash": "^4.17.24",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^7.0.9",
+    "antd": "^5.14.0",
+    "archiver": "^7.0.1",
+    "bcryptjs": "^3.0.3",
+    "cookies-next": "^4.3.0",
+    "dayjs": "^1.11.10",
+    "docx-preview": "^0.3.7",
+    "dotenv": "^17.2.3",
+    "jsonwebtoken": "^9.0.3",
+    "lodash": "^4.17.23",
+    "lucide-react": "^0.330.0",
+    "next": "^14.2.35",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.13",
+    "openai": "^6.15.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "recharts": "^2.12.0",
+    "resize-observer-polyfill": "^1.5.1",
+    "tesseract.js": "^5.0.5",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/archiver": "^7.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8",
+    "prisma": "^5.10.0",
+    "tailwindcss": "^3.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.1.6"
+  }
+}

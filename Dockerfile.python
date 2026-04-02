@@ -1,0 +1,41 @@
+# Dockerfile.python
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# 适配 Debian 12 的新版换源命令
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
+        sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources; \
+    else \
+        sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+        sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list; \
+    fi
+
+# 安装系统依赖 (opencv, gcc, xml处理 等)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libgl1  \
+    libglib2.0-0 \
+    libxml2-dev \
+    libxslt-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 拷贝依赖文件
+COPY python_service/requirements.txt .
+
+# 4. 【核心修改】设置镜像源并强制安装 CPU 版本的 Torch
+# 理由：默认 torch 包含数 GB 的 CUDA 驱动，CPU 版只有几百 MB，能极大节省空间。
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
+    sed -i '/pywin32/d' requirements.txt && \
+    sed -i '/pypiwin32/d' requirements.txt && \
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
+
+# 拷贝代码
+# 注意：构建上下文需要在项目根目录，通过 docker-compose context 指定
+COPY python_service .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

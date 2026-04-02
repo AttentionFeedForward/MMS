@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+pdfplumber
+openai
+python-dotenv
+pillow
+chromadb
+sentence-transformers
+rank-bm25
+jieba
+torch
+python-docx

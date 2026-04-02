@@ -1,0 +1,169 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+// --- Global Retrieval Library ---
+
+model Manufacturer {
+  id        String   @id @default(uuid())
+  name      String   @unique // e.g., "ABC Corp"
+  country   String?  // e.g., "China"
+  createdAt DateTime @default(now())
+  
+  materials MasterMaterial[]
+  documents MasterDocument[] // Manufacturer level docs (License, ISO)
+  scores    SupplierScore[]  // Added for supplier ratings
+}
+
+model SupplierScore {
+  id             String   @id @default(uuid())
+  manufacturerId String
+  manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
+  year           Int      // e.g., 2023
+  score          Float    // e.g., 95.5
+  createdAt      DateTime @default(now())
+
+  @@unique([manufacturerId, year]) // One score per manufacturer per year
+}
+
+model MaterialCode {
+  id         Int     @id @default(autoincrement())
+  code       String  @unique // 2/4/6/8 digits, stored as string
+  name       String
+  level      Int
+  parentCode String?
+
+  materials  MasterMaterial[]
+
+  @@index([name])
+  @@index([parentCode])
+  @@index([level])
+}
+
+model MasterMaterial {
+  id             String   @id @default(uuid())
+  name           String   // e.g., "Steel Pipe"
+  model          String?  // e.g., "DN100"
+  materialCode   String?
+  material       MaterialCode? @relation(fields: [materialCode], references: [code])
+  manufacturerId String
+  manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
+  createdAt      DateTime @default(now())
+
+  documents      MasterDocument[] // Material specific docs (Type Report)
+  archiveItems   ProjectArchiveItem[]
+  isGlobal       Boolean  @default(false)
+  status         String   @default("APPROVED") // "APPROVED", "PENDING"
+
+  @@index([materialCode])
+}
+
+model MasterDocument {
+  id             String   @id @default(uuid())
+  type           String   // "LICENSE", "ISO_QUALITY", "ISO_ENV", "ISO_SAFETY", "TYPE_REPORT", "CERTIFICATE"
+  filePath       String
+  fileName       String
+  status         String   @default("APPROVED") // "APPROVED", "PENDING"
+  
+  // Parsed Data
+  expiryDate     DateTime?
+  reportDate     DateTime?
+  parsedMeta     String?   // JSON string for other fields
+  manufacturerRole String? // Manufacturer roles (comma separated)
+  
+  // Relations (can belong to Manufacturer OR Material)
+  manufacturerId String?
+  manufacturer   Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  
+  materialId     String?
+  masterMaterial MasterMaterial? @relation(fields: [materialId], references: [id])
+
+  // Uploader info
+  uploaderId     String?
+  uploader       User?    @relation(fields: [uploaderId], references: [id])
+
+  rejectReason   String?
+
+  createdAt      DateTime @default(now())
+}
+
+// --- Project Archive Library ---
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  code        String?
+  description String?
+  status      String   @default("ACTIVE") // ACTIVE, ARCHIVED
+  createdAt   DateTime @default(now())
+
+  archiveItems ProjectArchiveItem[]
+  members      ProjectMember[]
+}
+
+// --- Authentication & Permissions ---
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String   // Hashed password
+  role      String   @default("PROJECT_STAFF") // "ADMIN", "PROJECT_STAFF"
+  createdAt DateTime @default(now())
+
+  projectMembers ProjectMember[]
+  uploadedDocuments MasterDocument[]
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  status    String   @default("PENDING") // "PENDING", "APPROVED"
+  rejectReason String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+}
+
+model ProjectArchiveItem {
+  id               String   @id @default(uuid())
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id])
+  
+  masterMaterialId String
+  masterMaterial   MasterMaterial @relation(fields: [masterMaterialId], references: [id])
+
+  // Status in this project
+  status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  
+  // Project specific documents (e.g., Sample Sealing Form)
+  documents        ProjectDocument[]
+
+  createdAt        DateTime @default(now())
+
+  @@unique([projectId, masterMaterialId])
+}
+
+model ProjectDocument {
+  id             String   @id @default(uuid())
+  type           String   // "SAMPLE_SEALING_FORM", "OTHER"
+  filePath       String
+  fileName       String
+  
+  archiveItemId  String
+  archiveItem    ProjectArchiveItem @relation(fields: [archiveItemId], references: [id])
+  
+  parsedMeta     String?   // Copy from MasterDocument for project-specific customization
+
+  createdAt      DateTime @default(now())
+}
