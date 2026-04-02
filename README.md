@@ -61,10 +61,12 @@
     ```bash
     npm run import:material-codes -- "物料编码分级表.xlsx"
     ```
-
-6.  启动开发服务器:
+6.   运行后端:
+    ```bash
+    python ./python_service/main.py
+    ```
+7.  启动开发服务器:
     ```bash
     npm run dev
     ```
-
-7.  访问: `http://localhost:3000`
+8.  访问: `http://localhost:3000`
