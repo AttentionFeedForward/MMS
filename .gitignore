@@ -27,6 +27,13 @@ python_service/chroma_db
 python_service/output
 python_service/__pycache__
 python_service/**/*.db
+
+# Large ML model / embeddings (keep repo code lightweight)
+python_service/**/pytorch_model.bin
+python_service/**/*.bin
+
+# Local test assets
+python_service/test/
 python_service/deepseek_ocr
 python_service/Logics_Parsing
 python_service/venv
