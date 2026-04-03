@@ -25,13 +25,29 @@
 *   **Charts**: Recharts
 
 ## 运行说明
-1.  安装依赖:
+1.  Node.js 前端环境设置:
     ```bash
     npm install
     ```
+2.  Python 后端环境设置:
+    - 创建并激活虚拟环境:
+    ```
+    # Windows
+    python -m venv venv
+    . ./venv/Scripts/activate
+    # Linux/macOS
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
 
-2.  创建环境变量文件（不要提交到 GitHub）
-    - 在项目根目录创建 `.env.local`
+    - 安装后端依赖:
+    ```bash
+    cd python_service
+    pip install -r requirements.txt
+    ```
+
+3.  创建环境变量文件（不要提交到 GitHub）
+    - 在项目根目录创建 `.env`
     - 你需要配置：
       - `JWT_SECRET`：JWT 密钥（用于登录）
       - `OPENAI_API_KEY`、`OPENAI_BASE_URL`：LLM/OCR 相关配置（代码在 `lib/llm.ts` 使用）
@@ -41,12 +57,12 @@
     说明：
     - SQLite 数据库在 `prisma/schema.prisma` 中已配置为 `file:./dev.db`（相对 `prisma/` 目录），一般本地不需要额外设置 `DATABASE_URL`。
 
-3.  初始化数据库:
+4.  初始化数据库:
     ```bash
     npx prisma db push
     ```
 
-4.  初始化内置账号（建议执行）:
+5.  初始化内置账号（建议执行）:
     ```bash
     npx prisma db seed
     ```
@@ -55,18 +71,18 @@
     - `admin` / `admin123`
     - `staff` / `staff123`
 
-5.  初始化物料编码目录（可选，但如果你使用“物料编码智能搜索”需要执行）
+6.  初始化物料编码目录（可选，但如果你使用“物料编码智能搜索”需要执行）
     - 准备文件：`物料编码分级表.xlsx`
     - 脚本默认从项目根目录读取该文件；你也可以传入路径：
     ```bash
     npm run import:material-codes -- "物料编码分级表.xlsx"
     ```
-6.  运行后端:
+7.  运行后端:
     ```bash
     python ./python_service/main.py
     ```  
-7.  启动开发服务器:
+8.  启动开发服务器:
     ```bash
     npm run dev
     ```
-8.  访问: `http://localhost:3000`
+9.  访问: `http://localhost:3000`

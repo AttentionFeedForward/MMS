@@ -85,7 +85,7 @@ def initialize_bm25():
         print(f"Error initializing BM25: {e}")
 
 # 从父目录加载 .env.local 环境变量
-load_dotenv(dotenv_path="../.env.local")
+load_dotenv(dotenv_path="../.env")
 
 # 屏蔽警告
 warnings.filterwarnings("ignore")
